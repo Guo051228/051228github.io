@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI朋友圈文案生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #fff;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px 15px;
+            min-height: 100vh;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-top: 15px;
+        }
+        
+        .logo {
+            font-size: 42px;
+            margin-bottom: 15px;
+            color: #7a88ff;
+            text-shadow: 0 0 15px rgba(122, 136, 255, 0.5);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff7ae3, #7a88ff, #7affb8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .input-area {
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 12px;
+            color: #fff;
+            padding: 15px;
+            font-size: 16px;
+            resize: none;
+            margin-bottom: 15px;
+        }
+        
+        textarea::placeholder {
+            color: #666;
+        }
+        
+        .examples {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+        
+        .example-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .example-tag {
+            background: rgba(100, 100, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-tag:active {
+            background: rgba(100, 100, 255, 0.4);
+            transform: scale(0.95);
+        }
+        
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(45deg, #6b5ce7, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        .result-area {
+            display: none;
+        }
+        
+        .result-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #7affb8;
+            text-align: center;
+        }
+        
+        .result-content {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 120px;
+            white-space: pre-line;
+            line-height: 1.8;
+            border: 1px solid #333;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px 20px;
+            color: #7a88ff;
+            display: none;
+        }
+        
+        .loading .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #7a88ff;
+            margin: 0 4px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        
+        .loading .dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .loading .dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .action-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+            padding: 15px;
+        }
+        
+        .wechat-tip {
+            font-size: 14px;
+            color: #7a88ff;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(122, 136, 255, 0.1);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">✨</div>
+            <h1>AI朋友圈文案生成器</h1>
+            <p class="subtitle">输入关键词，一键生成优质朋友圈文案</p>
+        </header>
+        
+        <div class="card input-area">
+            <textarea id="keywords" placeholder="例如：下雨天 咖啡 安静..."></textarea>
+            <div class="examples">
+                试试这些热门关键词:
+                <div class="example-tags">
+                    <div class="example-tag">下雨天 咖啡</div>
+                    <div class="example-tag">周末 朋友 聚会</div>
+                    <div class="example-tag">生日 祝福</div>
+                    <div class="example-tag">旅行 风景</div>
+                </div>
+            </div>
+            <button id="generate-btn">生成文案</button>
+        </div>
+        
+        <div class="wechat-tip">
+            提示: 长按生成的文案可直接复制
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <br>
+            AI正在思考中...
+        </div>
+        
+        <div class="card result-area" id="result-area">
+            <div class="result-title">生成结果</div>
+            <div class="result-content" id="result">这里将显示生成的文案...</div>
+            <div class="actions">
+                <div class="action-btn" id="copy-btn">复制文案</div>
+                <div class="action-btn" id="regenerate-btn">重新生成</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>本服务由AI技术驱动 | 生成的文案仅供娱乐参考</p>
+            <p>© 2023 朋友圈文案生成器</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const keywordsInput = document.getElementById('keywords');
+            const generateBtn = document.getElementById('generate-btn');
+            const resultDiv = document.getElementById('result');
+            const resultArea = document.getElementById('result-area');
+            const loadingDiv = document.getElementById('loading');
+            const copyBtn = document.getElementById('copy-btn');
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const exampleTags = document.querySelectorAll('.example-tag');
+            
+            // 示例数据
+            const examples = {
+                '下雨天 咖啡': [
+                    "🌧️ 雨天和咖啡最配了～\n一杯热拿铁，一本好书\n享受这惬意的午后时光",
+                    "下雨天的咖啡馆就像是一个避风港\n窗外雨声淅沥，屋内咖啡香浓\n这样的日子，简单而美好",
+                    "雨天☔️，咖啡️️，还有想你的心情\n每一滴雨落下的声音\n都像是在诉说思念"
+                ],
+                '周末 朋友 聚会': [
+                    "周末就是要和好朋友一起嗨皮！🍻\n美食、笑声、美好的回忆\n感谢有你们，让每个周末都值得期待",
+                    "最好的周末：好朋友+美食+无尽的笑声\n快乐的时光总是过得特别快\n期待下一次相聚！",
+                    "周末聚会小记：\n美食✓ 笑声✓ 好友✓\n完美的一天，感恩有你们❤️"
+                ],
+                '生日 祝福': [
+                    "🎂 又一年的成长，又一年的故事\n感谢所有祝福我的朋友\n愿未来每一天都奔走在热爱里",
+                    "吹灭蜡烛，许下心愿\n感恩所有的相遇与陪伴\n新的一岁，继续闪闪发光✨",
+                    "成长不期而遇，生日如期而至\n感谢时光厚爱，感恩一切给予\n愿温暖和美好都如约而至"
+                ],
+                '旅行 风景': [
+                    "旅途中的风景，是上帝赐予的最好礼物🏞️\n每一帧都像明信片般美丽\n用心记录，用爱珍藏",
+                    "在路上，遇见更好的自己📸\n山河远阔，人间烟火\n所有的美好都值得被记录",
+                    "风景如画，人在画中游\n最好的时光在路上\n用脚步丈量世界，用相机记录美好"
+                ]
+            };
+            
+            // 生成文案函数
+            function generateCopywriting() {
+                const keywords = keywordsInput.value.trim();
+                
+                if (!keywords) {
+                    resultDiv.innerHTML = "请输入关键词后再生成文案";
+                    resultArea.style.display = 'block';
+                    return;
+                }
+                
+                // 显示加载中
+                loadingDiv.style.display = 'block';
+                resultArea.style.display = 'none';
+                
+                // 模拟AI生成过程
+                setTimeout(function() {
+                    loadingDiv.style.display = 'none';
+                    resultArea.style.display = 'block';
+                    
+                    // 检查是否有匹配的示例
+                    let matchedExample = null;
+                    for (const key in examples) {
+                        const keyWords = key.split(' ');
+                        const inputWords = keywords.split(' ');
+                        const matchCount = keyWords.filter(word => 
+                            inputWords.includes(word)).length;
+                        
+                        if (matchCount >= 2) {
+                            matchedExample = key;
+                            break;
+                        }
+                    }
+                    
+                    if (matchedExample) {
+                        const texts = examples[matchedExample];
+                        const randomIndex = Math.floor(Math.random() * texts.length);
+                        resultDiv.innerHTML = texts[randomIndex];
+                    } else {
+                        // 通用回复
+                        const genericResponses = [
+                            `关于「${keywords}」的创意文案：\n\n生活需要仪式感，${keywords}就是今天最好的安排✨\n记录美好瞬间，分享快乐时光～`,
+                            `「${keywords}」主题文案：\n\n有时候，幸福很简单\n就像享受${keywords}的时光\n珍惜当下，感恩生活❤️`,
+                            `基于「${keywords}」生成的文案：\n\n每一天都是新的开始\n每一次${keywords}都是独特的体验\n保持热爱，奔赴山海🏃‍♂️`
+                        ];
+                        const randomIndex = Math.floor(Math.random() * genericResponses.length);
+                        resultDiv.innerHTML = genericResponses[randomIndex];
+                    }
+                }, 1500); // 模拟1.5秒的生成时间
+            }
+            
+            // 绑定生成按钮事件
+            generateBtn.addEventListener('click', generateCopywriting);
+            
+            // 绑定重新生成按钮事件
+            regenerateBtn.addEventListener('click', generateCopywriting);
+            
+            // 绑定复制按钮事件
+            copyBtn.addEventListener('click', function() {
+                const textToCopy = resultDiv.innerText;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = '已复制!';
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                    }, 1500);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                });
+            });
+            
+            // 添加示例点击功能
+            exampleTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    keywordsInput.value = this.textContent;
+                    keywordsInput.focus();
+                });
+            });
+            
+            // 添加输入框回车键支持
+            keywordsInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    generateCopywriting();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
